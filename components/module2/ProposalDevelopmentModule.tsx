@@ -1,19 +1,18 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { BellIcon, CheckCircleIcon, DocumentTextIcon, SparklesIcon } from '../../assets/icons';
+import { MOCK_KNOWLEDGE_BASES, MOCK_USERS } from '../../constants';
+import { useAuth } from '../../contexts/AuthContext';
+import { useProject } from '../../contexts/ProjectContext';
+import { generateTextWithRAG } from '../../services/geminiService';
+import { ModuleStage, Proposal, UserRole } from '../../types';
 import { ModuleWrapper } from '../core/ModuleWrapper';
-import { DocumentTextIcon, SparklesIcon, CheckCircleIcon, BellIcon } from '../../assets/icons';
 import { Button } from '../shared/Button';
 import { Card } from '../shared/Card';
-import { TextAreaInput } from '../shared/TextAreaInput';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
-import { useProject } from '../../contexts/ProjectContext';
-import { Proposal, UserRole, ModuleStage } from '../../types';
-import { generateTextWithRAG, generateJsonOutput } from '../../services/geminiService';
-import { MOCK_KNOWLEDGE_BASES, MOCK_USERS } from '../../constants';
 import { NotificationBanner } from '../shared/NotificationBanner';
-import { InfoTooltip } from '../shared/InfoTooltip';
-import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { TextAreaInput } from '../shared/TextAreaInput';
+import TiptapEditor from '../shared/TiptapEditor';
 
 const PROPOSAL_SECTIONS = [
     { id: "background", name: "Detailed Background", placeholder: "Expand on the literature, identify gaps..." },
@@ -239,13 +238,21 @@ export const ProposalDevelopmentModule: React.FC = () => {
                     </Button>
                 )}
             >
-              <TextAreaInput
+              <TiptapEditor
                 value={proposal.sections?.[activeSection] || ''}
-                onChange={e => handleSectionChange(activeSection, e.target.value)}
+                onChange={content => handleSectionChange(activeSection, content)}
                 placeholder={PROPOSAL_SECTIONS.find(s => s.id === activeSection)?.placeholder}
                 rows={15}
                 className="min-h-[300px]"
                 disabled={!canEdit || isLoading}
+                onAIContentAccept={content => {
+                  handleSectionChange(activeSection, content);
+                  handleSaveProposal();
+                  setNotification({
+                    message: `${PROPOSAL_SECTIONS.find(s => s.id === activeSection)?.name || activeSection} section updated with AI suggestion and saved!`,
+                    type: 'success',
+                  });
+                }}
               />
               {!canEdit && <p className="text-sm text-red-500 mt-2">You do not have permission to edit this proposal.</p>}
             </Card>
