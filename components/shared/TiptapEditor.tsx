@@ -79,10 +79,18 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   // State for dropdowns, loading, response, and modal
   const [action, setAction] = useState('rewrite');
   const [style, setStyle] = useState('formal');
+  const [model, setModel] = useState('gemini'); // Add model state, default to 'gemini'
   const [loading, setLoading] = useState(false);
   const [responseText, setResponseText] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState('');
+
+  // Model options
+  const modelOptions = [
+    { value: 'gemini', label: 'Gemini' },
+    { value: 'deepseek', label: 'Deepseek' },
+    { value: 'openai', label: 'OpenAI' },
+  ];
 
   // POST request handler
   const handleSend = async () => {
@@ -97,6 +105,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           text: editor.getText(),
           action,
           style,
+          model, // Send model as lowercase value
         }),
       });
       if (!res.ok) throw new Error('Request failed');
@@ -190,6 +199,14 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           Style:
           <select value={style} onChange={e => setStyle(e.target.value)} disabled={disabled || loading} style={{ marginLeft: 4 }}>
             {styleOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Model:
+          <select value={model} onChange={e => setModel(e.target.value)} disabled={disabled || loading} style={{ marginLeft: 4 }}>
+            {modelOptions.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
