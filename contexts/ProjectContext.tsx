@@ -1,7 +1,6 @@
 
-import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
-import { ResearchProject, ModuleStage, ResearchIdea, Proposal, DataSet, StatisticalAnalysis, Manuscript, UserRole, IdeationMode, DataCollectionPathway } from '../types';
-import { MODULE_STAGES_ORDERED } from '../constants';
+import React, { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import { DataSet, Manuscript, ModuleStage, Proposal, ResearchIdea, ResearchProject, StatisticalAnalysis, UserRole } from '../types';
 import { useAuth } from './AuthContext';
 
 interface ProjectContextType {
@@ -20,6 +19,7 @@ interface ProjectContextType {
   error: string | null;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
   clearError: () => void;
+  setProposalBackgroundFromLiteratureSummary: () => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -127,6 +127,24 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const clearError = useCallback(() => setError(null), []);
   
+  const setProposalBackgroundFromLiteratureSummary = useCallback(() => {
+    setCurrentProject(prev => {
+      if (!prev || !prev.idea?.aiReport?.literatureSummary) return prev;
+      const newBackground = prev.idea.aiReport.literatureSummary;
+      return {
+        ...prev,
+        proposal: {
+          ...prev.proposal,
+          sections: {
+            ...prev.proposal?.sections,
+            background: newBackground,
+          },
+          ethicsStatus: prev.proposal?.ethicsStatus || "Not Submitted",
+        }
+      };
+    });
+  }, []);
+
   const value = useMemo(() => ({
     currentProject,
     startNewProject,
@@ -143,7 +161,8 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     error,
     setError,
     clearError,
-  }), [currentProject, startNewProject, updateProject, updateIdea, updateProposal, updateDataSet, updateAnalysis, updateManuscript, assignExpert, setProjectStage, isLoading, error, clearError]);
+    setProposalBackgroundFromLiteratureSummary,
+  }), [currentProject, startNewProject, updateProject, updateIdea, updateProposal, updateDataSet, updateAnalysis, updateManuscript, assignExpert, setProjectStage, isLoading, error, clearError, setProposalBackgroundFromLiteratureSummary]);
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
 };

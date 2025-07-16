@@ -31,7 +31,8 @@ export const IdeaHubModule: React.FC = () => {
     setError: setProjectError,
     assignExpert,
     setProjectStage,
-    clearError
+    clearError,
+    setProposalBackgroundFromLiteratureSummary
   } = useProject();
   
   const [projectTitle, setProjectTitle] = useState('');
@@ -249,6 +250,12 @@ export const IdeaHubModule: React.FC = () => {
             return;
         }
         updateIdea({ isNovel: (currentProject.idea.noveltyScore || 0) >= 60 }); 
+        if (currentProject.idea.aiReport?.literatureSummary) {
+          console.log('Literature Summary:', currentProject.idea.aiReport.literatureSummary);
+        } else {
+          console.log('No Literature Summary found.');
+        }
+        setProposalBackgroundFromLiteratureSummary();
         setProjectStage(ModuleStage.PROPOSAL_DEVELOPMENT);
         setNotification({message: "Idea stage complete! Proceeding to Proposal Development.", type: 'success'});
         navigate('/proposal');

@@ -1,14 +1,13 @@
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Part } from '@google/genai';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Cog6ToothIcon, PaperAirplaneIcon, SparklesIcon, UserCircleIcon } from '../../assets/icons';
+import { useAuth } from '../../contexts/AuthContext';
+import { streamChatResponse } from '../../services/geminiService';
 import { ChatMessage, GroundingChunk, UserRole } from '../../types';
 import { Button } from '../shared/Button';
-import { TextAreaInput } from '../shared/TextAreaInput';
-import { LoadingSpinner } from '../shared/LoadingSpinner';
-import { PaperAirplaneIcon, SparklesIcon, UserCircleIcon, Cog6ToothIcon } from '../../assets/icons';
-import { streamChatResponse } from '../../services/geminiService'; 
-import { Part } from '@google/genai';
-import { useAuth } from '../../contexts/AuthContext';
 import { InfoTooltip } from '../shared/InfoTooltip';
+import { TextAreaInput } from '../shared/TextAreaInput';
 
 interface ChatInterfaceProps {
   systemInstruction?: string;
@@ -158,7 +157,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <label htmlFor="thinkingToggle" className="text-xs font-medium text-gray-700">
                     Enable AI Thinking 
                 </label>
-                <InfoTooltip text="Higher Quality/Slower for gemini-2.5-flash-preview-04-17. Disable for low latency needs like game AI." position="right"/>
+                {/* model: "models/gemini-1.5-flash"
+ */}
+                <InfoTooltip text="Higher Quality/Slower for gemini-1.5-flash. Disable for low latency needs like game AI." position="right"/>
             </div>
            )}
         </div>

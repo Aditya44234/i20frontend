@@ -5,7 +5,7 @@ import { MOCK_KNOWLEDGE_BASES, MOCK_USERS } from '../../constants';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProject } from '../../contexts/ProjectContext';
 import { generateTextWithRAG } from '../../services/geminiService';
-import { ModuleStage, Proposal, UserRole } from '../../types';
+import { ModuleStage, UserRole } from '../../types';
 import { ModuleWrapper } from '../core/ModuleWrapper';
 import { Button } from '../shared/Button';
 import { Card } from '../shared/Card';
@@ -40,28 +40,27 @@ export const ProposalDevelopmentModule: React.FC = () => {
     clearError
   } = useProject(); 
 
-  const [proposal, setProposal] = useState<Partial<Proposal>>({ sections: {}, ethicsStatus: "Not Submitted" });
   const [activeSection, setActiveSection] = useState<string | null>(PROPOSAL_SECTIONS[0].id);
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
   const [showMeetingPlaceholder, setShowMeetingPlaceholder] = useState(false);
 
   useEffect(() => {
     if (currentProject?.proposal) {
-      setProposal(currentProject.proposal);
+      // setProposal(currentProject.proposal); // This line is removed as per the new_code
     } else if (currentProject?.idea?.concept) {
-      setProposal(prev => ({
-        ...prev,
-        title: currentProject.title || "Research Proposal",
-        sections: {
-          ...prev.sections,
-          background: currentProject.idea?.background || '',
-          objectives: currentProject.idea?.objective || '',
-          methodology: currentProject.idea?.methodology || '',
-        },
-        ethicsStatus: "Not Submitted",
-      }));
+      // setProposal(prev => ({ // This line is removed as per the new_code
+      //   ...prev,
+      //   title: currentProject.title || "Research Proposal",
+      //   sections: {
+      //     ...prev.sections,
+      //     background: currentProject.idea?.background || '',
+      //     objectives: currentProject.idea?.objective || '',
+      //     methodology: currentProject.idea?.methodology || '',
+      //   },
+      //   ethicsStatus: "Not Submitted",
+      // }));
     } else {
-      setProposal({ sections: {}, ethicsStatus: "Not Submitted" });
+      // setProposal({ sections: {}, ethicsStatus: "Not Submitted" }); // This line is removed as per the new_code
     }
 
     if (currentProject?.assignedResearcher && !currentProject.proposal) {
@@ -71,23 +70,24 @@ export const ProposalDevelopmentModule: React.FC = () => {
   }, [currentProject]);
 
   const handleSectionChange = (sectionId: string, value: string) => {
-    setProposal(prev => ({
-      ...prev,
+    if (!currentProject?.proposal) return;
+    updateProposal({
+      ...currentProject.proposal,
       sections: {
-        ...prev.sections,
+        ...currentProject.proposal.sections,
         [sectionId]: value,
       },
-    }));
+    });
   };
 
   const handleSaveProposal = () => {
     if (!currentProject) return;
-    updateProposal(proposal);
+    updateProposal(currentProject.proposal);
     setNotification({ message: "Proposal draft saved successfully!", type: 'success' });
   };
   
   const getAISectionSuggestion = async (sectionId: string) => {
-    if (!currentProject || !proposal.sections) {
+    if (!currentProject || !currentProject.proposal) {
       setError("No active project or proposal to get suggestions for.");
       return;
     }
@@ -95,7 +95,7 @@ export const ProposalDevelopmentModule: React.FC = () => {
     clearError();
     setNotification(null);
 
-    const currentSectionContent = proposal.sections[sectionId] || '';
+    const currentSectionContent = currentProject.proposal.sections[sectionId] || '';
     const ideaSummary = `
         Project Title: ${currentProject.title}
         Core Idea: ${currentProject.idea?.concept || 'N/A'}
@@ -239,7 +239,7 @@ export const ProposalDevelopmentModule: React.FC = () => {
                 )}
             >
               <TiptapEditor
-                value={proposal.sections?.[activeSection] || ''}
+                value={currentProject?.proposal?.sections?.[activeSection] || ''}
                 onChange={content => handleSectionChange(activeSection, content)}
                 placeholder={PROPOSAL_SECTIONS.find(s => s.id === activeSection)?.placeholder}
                 rows={15}
@@ -263,16 +263,16 @@ export const ProposalDevelopmentModule: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-700">Current Status: 
                   <span className={`ml-2 font-semibold px-2 py-0.5 rounded-full text-xs
-                    ${proposal.ethicsStatus === "Approved" ? "bg-success-light text-success-textLight" :
-                      proposal.ethicsStatus === "Submitted" ? "bg-yellow-100 text-yellow-700" : 
-                      proposal.ethicsStatus === "Feedback Received" ? "bg-orange-100 text-orange-700" : 
+                    ${currentProject?.proposal?.ethicsStatus === "Approved" ? "bg-success-light text-success-textLight" :
+                      currentProject?.proposal?.ethicsStatus === "Submitted" ? "bg-yellow-100 text-yellow-700" : 
+                      currentProject?.proposal?.ethicsStatus === "Feedback Received" ? "bg-orange-100 text-orange-700" : 
                       "bg-gray-100 text-gray-700"}`}>
-                    {proposal.ethicsStatus}
+                    {currentProject?.proposal?.ethicsStatus}
                   </span>
                 </p>
-                {proposal.ethicsFeedback && (
+                {currentProject?.proposal?.ethicsFeedback && (
                   <div className="mt-2 p-3 bg-gray-50 border rounded-md text-sm text-gray-600">
-                    <strong>Feedback/Notes:</strong> {proposal.ethicsFeedback}
+                    <strong>Feedback/Notes:</strong> {currentProject?.proposal?.ethicsFeedback}
                   </div>
                 )}
               </div>
@@ -280,13 +280,13 @@ export const ProposalDevelopmentModule: React.FC = () => {
               {isLoading && <LoadingSpinner message="Processing request..." />}
 
               <div className="flex flex-wrap gap-2">
-                {canEdit && proposal.ethicsStatus === "Not Submitted" && (
+                {canEdit && currentProject?.proposal?.ethicsStatus === "Not Submitted" && (
                   <Button onClick={submitToEthics} isLoading={isLoading} variant="primary">Submit to Ethics (Simulated)</Button>
                 )}
-                {proposal.ethicsStatus === "Submitted" && (
+                {currentProject?.proposal?.ethicsStatus === "Submitted" && (
                   <Button onClick={simulateEthicsFeedback} isLoading={isLoading} variant="secondary">Simulate Ethics Feedback</Button>
                 )}
-                {canEdit && proposal.ethicsStatus === "Feedback Received" && (
+                {canEdit && currentProject?.proposal?.ethicsStatus === "Feedback Received" && (
                   <>
                     <p className="text-sm text-gray-600 w-full">Address feedback in proposal sections, then resubmit or mark as approved.</p>
                     <TextAreaInput 
@@ -298,7 +298,7 @@ export const ProposalDevelopmentModule: React.FC = () => {
                     <Button onClick={markEthicsApproved} isLoading={isLoading} variant="ghost">Force Mark Approved (Dev)</Button>
                   </>
                 )}
-                 {canEdit && proposal.ethicsStatus !== "Approved" && proposal.ethicsStatus !== "Feedback Received" && proposal.ethicsStatus !== "Submitted" && (
+                 {canEdit && currentProject?.proposal?.ethicsStatus !== "Approved" && currentProject?.proposal?.ethicsStatus !== "Feedback Received" && currentProject?.proposal?.ethicsStatus !== "Submitted" && (
                      <Button onClick={markEthicsApproved} isLoading={isLoading} variant="ghost" size="sm">Force Mark Approved (Dev)</Button>
                  )}
               </div>
@@ -312,7 +312,7 @@ export const ProposalDevelopmentModule: React.FC = () => {
                 </div>
               )}
 
-              {proposal.ethicsStatus === "Approved" && (
+              {currentProject?.proposal?.ethicsStatus === "Approved" && (
                 <Button onClick={proceedToDataCollection} isLoading={isLoading} className="mt-4" variant="primary">
                   Proceed to Data Collection & Analysis
                 </Button>
