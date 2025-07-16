@@ -25,7 +25,7 @@ export const generateText = async (
     if (systemInstruction) {
       config.systemInstruction = systemInstruction;
     }
-    if (GEMINI_TEXT_MODEL === 'gemini-2.5-flash-preview-04-17') { // Only apply thinkingConfig to compatible models
+    if (GEMINI_TEXT_MODEL === 'models/gemini-1.5-flash') { // Only apply thinkingConfig to compatible models
         config.thinkingConfig = { thinkingBudget: useThinking ? undefined : 0 }; // undefined enables thinking, 0 disables
     }
 

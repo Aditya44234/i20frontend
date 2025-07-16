@@ -1,10 +1,11 @@
 
-import { UserRole, ModuleStage, IdeationMode } from './types';
+import { IdeationMode, ModuleStage, UserRole } from './types';
 
 export const APP_TITLE = "I2O Clinical Research Accelerator";
 export const APP_SUBTITLE = "AI-Driven End-to-End Automation of Clinical Research";
 
-export const GEMINI_TEXT_MODEL = "gemini-2.5-flash-preview-04-17";
+// export const GEMINI_TEXT_MODEL = "gemini-2.5-flash-preview-04-17";
+export const GEMINI_TEXT_MODEL = "models/gemini-1.5-flash";
 
 export const USER_ROLES_CONFIG: { role: UserRole; description: string }[] = [
   { role: UserRole.HCP, description: "Initiate and conduct research projects." },
